@@ -3,8 +3,11 @@
   (:export
     define-config-dir
     define-config-file
+    define-storage-dir
     mkdir-if-not-exists
     with-write-config
+    with-read-config
+    dir-ending
     ))
 
 (in-package :apputils)
@@ -35,6 +38,9 @@
 (defmacro define-config-file (fun-name appname filename)
   `(defun ,fun-name () (config-file ,appname ,filename)))
 
+(defmacro define-storage-dir (fun-name appname storagedirname)
+  `(defun ,fun-name () (config-directory (concatenate 'string ,appname (dir-ending) ,storagedirname (dir-ending)))))
+
 (defun mkdir-if-not-exists (dir)
   (when (not (uiop:directory-exists-p dir))
     (sb-posix:mkdir dir #o0777)))
@@ -46,4 +52,10 @@
                            :if-does-not-exist :create
                            :if-exists :supersede
                            :direction :output)
+       ,@body)))
+
+(defmacro with-read-config (str conf_file &body body)
+  (format t "args:~S~%" str)
+  (let ((conf conf_file))
+    `(with-open-file (,str ,conf :direction :input)
        ,@body)))
