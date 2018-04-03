@@ -13,12 +13,11 @@
 (in-package :apputils)
 
 (defun dir-ending ()
-  #+:windows "\\"
-  #-:windows "/")
+  (format nil "~c" (uiop:directory-separator-for-host)))
 
 (defun home-directory ()
-  #-:windows (concatenate 'string (sb-posix:getenv "HOME") (dir-ending))
-  #+:windows (concatenate 'string (sb-posix:getenv "USER") (dir-ending)))
+  #-:win32 (concatenate 'string (sb-posix:getenv "HOME") (dir-ending))
+  #+:win32 (concatenate 'string (sb-posix:getenv "USER") (dir-ending)))
 
 ;#+:windows
 ;windows specific
@@ -26,8 +25,8 @@
   (concatenate 'string (sb-posix:getenv "APPDATA") (dir-ending)))
 
 (defun config-directory (appname &key (hidden t))
-  #-:windows (merge-pathnames (concatenate 'string (when hidden ".") appname (dir-ending)) (home-directory))
-  #+:windows (merge-pathnames appname (appdata-directory)))
+  #-:win32 (merge-pathnames (concatenate 'string (when hidden ".") appname (dir-ending)) (home-directory))
+  #+:win32 (merge-pathnames appname (appdata-directory)))
 
 (defun config-file (appname filename)
   (merge-pathnames (config-directory appname) filename))
